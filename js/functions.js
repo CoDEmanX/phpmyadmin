@@ -1371,11 +1371,15 @@ AJAX.registerOnload('functions.js', function () {
     // of the browser, bind the code mirror to inline query editor.
     bindCodeMirrorToInlineEditor();
     $("a.inline_edit_sql").live('click', function () {
-        if ($('#sql_query_edit').length) {
-            // An inline query editor is already open,
+
+        if ($('#sql_query_edit').parents('.sqlOuter').is($(this).parent().prev('.sqlOuter')) && $('#sql_query_edit').length) {
+            // An inline query editor for the clicked link is already open,
             // we don't want another copy of it
             return false;
         }
+
+        // There can possibly be another query editor, remove it
+        $("#sql_query_edit_discard").trigger('click');
 
         var $form = $(this).prev('form');
         var sql_query  = $form.find("input[name='sql_query']").val();
@@ -1395,6 +1399,14 @@ AJAX.registerOnload('functions.js', function () {
 
         bindCodeMirrorToInlineEditor();
         return false;
+    });
+    
+    $("code.sql a").live('click', function (e) {
+        e.stopImmediatePropagation();
+    });
+
+    $("code.sql").live('click', function () {
+        $(this).parent().next().children("a.inline_edit_sql").trigger('click');
     });
 
     $("input#sql_query_edit_save").live('click', function () {
@@ -1516,6 +1528,8 @@ function catchKeypressesFromSqlTextboxes(event) {
         } else if ($('#sqlquery').length > 0) {
             $("#button_submit_query").trigger('click');
         }
+    } else if (event.keyCode == 27) {
+        $("#sql_query_edit_discard").trigger('click');
     }
 }
 
